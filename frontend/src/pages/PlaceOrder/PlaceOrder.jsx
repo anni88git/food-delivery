@@ -3,13 +3,15 @@ import "./PlaceOrder.css";
 import { StoreContext } from "../../context/StoreContext";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom';
 
 const PlaceOrder = () => {
-  const navigate= useNavigate();
+  const navigate = useNavigate();
 
-  const { getTotalCartAmount, token, food_list, cartItems, url } =
+  const { getTotalCartAmount, token, food_list, cartItems, getCartRestaurant, url, currency } =
     useContext(StoreContext);
+    
+  const [paymentMethod, setPaymentMethod] = useState("COD");
   const [data, setData] = useState({
     firstName: "",
     lastName: "",
@@ -18,7 +20,7 @@ const PlaceOrder = () => {
     city: "",
     state: "",
     zipcode: "",
-    country: "",
+    country: "India",
     phone: "",
   });
 
@@ -28,45 +30,65 @@ const PlaceOrder = () => {
     setData((data) => ({ ...data, [name]: value }));
   };
 
-  const placeOrder = async (event) => {
+  const handlePlaceOrder = async (event) => {
     event.preventDefault();
-    let orderItems = [];
-    food_list.map((item) => {
+    
+    const cartRestaurant = getCartRestaurant();
+    const orderItems = [];
+    
+    food_list.forEach((item) => {
       if (cartItems[item._id] > 0) {
-        let itemInfo = item;
+        let itemInfo = { ...item };
         itemInfo["quantity"] = cartItems[item._id];
         orderItems.push(itemInfo);
       }
     });
-    let orderData = {
+
+    if (orderItems.length === 0) {
+      toast.error("Cart is empty");
+      return;
+    }
+
+    const orderData = {
       address: data,
       items: orderItems,
-      amount: getTotalCartAmount() + 2,
+      amount: getTotalCartAmount() + 22, // matching delivery/platform fee in cart
+      paymentMethod,
+      restaurantId: cartRestaurant?._id || null,
+      restaurantName: cartRestaurant?.name || "",
     };
     
-    let response= await axios.post(url+"/api/order/place",orderData,{headers:{token}});
-    if(response.data.success){
-      const {session_url}=response.data;
-      window.location.replace(session_url);
-    }else{
-      toast.error("Errors!")
+    try {
+      const response = await axios.post(url + "/api/order/place", orderData, { headers: { token } });
+      if (response.data.success) {
+        const { orderId } = response.data;
+        toast.success("Order Placed Successfully!");
+        navigate(`/tracking/${orderId}`);
+      } else {
+        toast.error("Failed to place order.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Network Error! Order placing failed.");
     }
   };
 
-  useEffect(()=>{
-    if(!token){
-      toast.error("Please Login first")
-      navigate("/cart")
+  useEffect(() => {
+    if (!token) {
+      toast.error("Please login to proceed to checkout");
+      navigate("/cart");
+    } else if (getTotalCartAmount() === 0) {
+      toast.error("Add items to your cart first");
+      navigate("/");
     }
-    else if(getTotalCartAmount()===0){
-      toast.error("Please Add Items to Cart");
-      navigate("/cart")
-    }
-  },[token])
+  }, [token]);
+
   return (
-    <form className="place-order" onSubmit={placeOrder}>
-      <div className="place-order-left">
-        <p className="title">Delivery Information</p>
+    <form className="place-order" onSubmit={handlePlaceOrder}>
+      {/* Left Column: Delivery Address Form */}
+      <div className="place-order-left glass-card animate-fade">
+        <h3 className="title">Delivery Information</h3>
+        
         <div className="multi-fields">
           <input
             required
@@ -85,22 +107,25 @@ const PlaceOrder = () => {
             placeholder="Last name"
           />
         </div>
+        
         <input
           required
           name="email"
           value={data.email}
           onChange={onChangeHandler}
-          type="text"
+          type="email"
           placeholder="Email Address"
         />
+        
         <input
           required
           name="street"
           value={data.street}
           onChange={onChangeHandler}
           type="text"
-          placeholder="Street"
+          placeholder="Street/Address details"
         />
+        
         <div className="multi-fields">
           <input
             required
@@ -119,6 +144,7 @@ const PlaceOrder = () => {
             placeholder="State"
           />
         </div>
+        
         <div className="multi-fields">
           <input
             required
@@ -137,6 +163,7 @@ const PlaceOrder = () => {
             placeholder="Country"
           />
         </div>
+        
         <input
           required
           name="phone"
@@ -146,28 +173,70 @@ const PlaceOrder = () => {
           placeholder="Phone"
         />
       </div>
+
+      {/* Right Column: Checkout Summary & Payment Options */}
       <div className="place-order-right">
-        <div className="cart-total">
-          <h2>Cart Totals</h2>
-          <div>
+        {/* Payment Methods */}
+        <div className="payment-card glass-card">
+          <h3>Payment Method</h3>
+          <div className="payment-options">
+            <label className={`pay-option ${paymentMethod === "COD" ? "selected" : ""}`}>
+              <input 
+                type="radio" 
+                name="payment" 
+                checked={paymentMethod === "COD"} 
+                onChange={() => setPaymentMethod("COD")}
+              />
+              <span className="pay-emoji">💵</span>
+              <div className="details">
+                <b>Cash on Delivery (COD)</b>
+                <p>Pay cash or scan QR code on delivery</p>
+              </div>
+            </label>
+            
+            <label className={`pay-option ${paymentMethod === "ONLINE" ? "selected" : ""}`}>
+              <input 
+                type="radio" 
+                name="payment" 
+                checked={paymentMethod === "ONLINE"} 
+                onChange={() => setPaymentMethod("ONLINE")}
+              />
+              <span className="pay-emoji">💳</span>
+              <div className="details">
+                <b>Simulated Pay Online</b>
+                <p>Instant checkout mockup (auto succeeds)</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        {/* Totals */}
+        <div className="cart-total glass-card">
+          <h2>Order Summary</h2>
+          <hr />
+          <div className="total-details-block">
             <div className="cart-total-details">
-              <p>Subtotals</p>
-              <p>${getTotalCartAmount()}</p>
+              <p>Subtotal</p>
+              <p>{currency}{getTotalCartAmount()}</p>
             </div>
-            <hr />
             <div className="cart-total-details">
               <p>Delivery Fee</p>
-              <p>${getTotalCartAmount() === 0 ? 0 : 2}</p>
+              <p>{currency}20</p>
+            </div>
+            <div className="cart-total-details">
+              <p>Platform Fee</p>
+              <p>{currency}2</p>
             </div>
             <hr />
-            <div className="cart-total-details">
-              <b>Total</b>
-              <b>
-                ${getTotalCartAmount() === 0 ? 0 : getTotalCartAmount() + 2}
-              </b>
+            <div className="cart-total-details total-row">
+              <b>To Pay</b>
+              <b>{currency}{getTotalCartAmount() + 22}</b>
             </div>
           </div>
-          <button type="submit">PROCEED TO PAYMENT</button>
+          
+          <button type="submit" className="place-btn">
+            CONFIRM & PLACE ORDER ➔
+          </button>
         </div>
       </div>
     </form>

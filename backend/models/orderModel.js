@@ -5,9 +5,23 @@ const orderSchema = new mongoose.Schema({
   items: { type: Array, required: true },
   amount: { type: Number, required: true },
   address: { type: Object, required: true },
-  status: { type: String, default: "Food Processing" },
-  date: { type: Date, default: Date.now() },
+  status: { type: String, default: "Order Placed" },
+  date: { type: Date, default: Date.now },
   payment: { type: Boolean, default: false },
+  paymentMethod: { type: String, default: "COD" },
+  restaurantId: { type: mongoose.Schema.Types.ObjectId, ref: "restaurant" },
+  restaurantName: { type: String, default: "" },
+  estimatedDelivery: { type: Number, default: 35 }, // minutes
+  deliveryPartner: { type: String, default: "" },
+  statusHistory: {
+    type: [
+      {
+        status: String,
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
+    default: [],
+  },
 });
 
 const orderModel =

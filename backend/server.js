@@ -6,10 +6,11 @@ import userRouter from "./routes/userRoute.js";
 import "dotenv/config";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
+import restaurantRouter from "./routes/restaurantRoute.js";
 
 // app config
 const app = express();
-const port =process.env.PORT || 4000;
+const port = process.env.PORT || 4000;
 
 //middlewares
 app.use(express.json());
@@ -24,11 +25,12 @@ app.use("/images", express.static("uploads"));
 app.use("/api/user", userRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
+app.use("/api/restaurant", restaurantRouter);
 
 app.get("/", (req, res) => {
-  res.send("API Working");
+  res.send("BiteBolt API Running 🚀");
 });
 
 app.listen(port, () => {
-  console.log(`Server Started on port: ${port}`);
+  console.log(`BiteBolt Server Started on port: ${port}`);
 });

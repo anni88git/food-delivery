@@ -1,44 +1,172 @@
-.place-order{
-    display: flex;
-    align-items: start;
-    justify-content: space-between;
-    gap: 50px;
-    margin-top: 100px;
+.place-order {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 40px;
+  margin-top: 30px;
+  align-items: start;
 }
-.place-order-left{
-    width: 100%;
-    max-width: max(30%,500px);
+
+.place-order-left {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
-.place-order-left .title{
-    font-size: 30px;
-    font-weight: 600;
-    margin-bottom: 50px;
+
+.place-order-left .title {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 5px;
 }
-.place-order-left input{
-    margin-bottom: 15px;
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #c5c5c5;
-    border-radius: 4px;
-    outline-color: tomato;
+
+.place-order-left input {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: #fff;
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition-fast);
 }
-.place-order-left .multi-fields{
-    display: flex;
-    gap: 10px;
+
+.place-order-left input:focus {
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.08);
 }
-.place-order-right{
-    width: 100%;
-    max-width: max(40%,500px);
+
+.multi-fields {
+  display: flex;
+  gap: 15px;
 }
-.place-order .cart-total button{
-    margin-top: 30px;
+
+/* Right Panel payment block */
+.place-order-right {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
 }
-@media (max-width:800px) {
-    .place-order{
-        flex-direction: column;
-        margin-top: 50px;
-    }
-    .place-order-left .title{
-        font-size: 27px;
-    }
+
+.payment-card {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.payment-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.pay-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.pay-option:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pay-option.selected {
+  border-color: var(--color-primary);
+  background: rgba(255, 82, 59, 0.08);
+}
+
+.pay-option input {
+  cursor: pointer;
+}
+
+.pay-emoji {
+  font-size: 24px;
+}
+
+.pay-option .details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pay-option .details b {
+  font-size: 14px;
+}
+
+.pay-option .details p {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Order summary card */
+.cart-total {
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cart-total h2 {
+  font-size: 20px;
+}
+
+.cart-total hr {
+  border: 0;
+  height: 1px;
+  background-color: var(--border-color);
+}
+
+.total-details-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.cart-total-details {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cart-total-details.total-row {
+  font-size: 16px;
+  color: #fff;
+}
+
+.place-btn {
+  background: var(--color-primary-gradient);
+  color: white;
+  border: none;
+  width: 100%;
+  padding: 15px;
+  font-size: 14px;
+  font-weight: 800;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-top: 10px;
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.place-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+@media (max-width: 992px) {
+  .place-order {
+    grid-template-columns: 1fr;
+  }
 }

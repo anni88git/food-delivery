@@ -6,68 +6,91 @@ import { StoreContext } from "../../context/StoreContext";
 import { toast } from "react-toastify";
 
 const Navbar = ({ setShowLogin }) => {
-  const [menu, setMenu] = useState("home");
-  const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
-  const navigate=useNavigate();
+  const { getCartCount, token, setToken, selectedLocation, setSelectedLocation } = useContext(StoreContext);
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
+  const navigate = useNavigate();
 
-  const logout=()=>{
+  const locations = [
+    "Connaught Place, Delhi",
+    "Jubilee Hills, Hyderabad",
+    "Koramangala, Bangalore",
+    "Andheri West, Mumbai",
+    "Indiranagar, Bangalore",
+    "Salt Lake, Kolkata"
+  ];
+
+  const logout = () => {
     localStorage.removeItem("token");
     setToken("");
-    toast.success("Logout Successfully")
+    toast.success("Logged out successfully");
     navigate("/");
-  }
+  };
+
   return (
-    <div className="navbar">
-      <Link to="/">
-        <img src={assets.logo} alt="" className="logo" />
-      </Link>
-      <ul className="navbar-menu">
-        <Link
-          to="/"
-          onClick={() => setMenu("home")}
-          className={menu === "home" ? "active" : ""}
-        >
-          home
+    <div className="navbar glass-card">
+      <div className="navbar-left">
+        <Link to="/" className="brand-link">
+          <span className="brand-logo">⚡</span>
+          <span className="brand-name">Bite<span>Bolt</span></span>
         </Link>
-        <a
-          href="#explore-menu"
-          onClick={() => setMenu("menu")}
-          className={menu === "menu" ? "active" : ""}
-        >
-          menu
-        </a>
-        <a
-          href="#app-download"
-          onClick={() => setMenu("mobile-app")}
-          className={menu === "mobile-app" ? "active" : ""}
-        >
-          mobile-app
-        </a>
-        <a
-          href="#footer"
-          onClick={() => setMenu("contact-us")}
-          className={menu === "contact-us" ? "active" : ""}
-        >
-          contact us
-        </a>
-      </ul>
-      <div className="navbar-right">
-        <img src={assets.search_icon} alt="" />
-        <div className="navbar-search-icon">
-          <Link to="/cart">
-            <img src={assets.basket_icon} alt="" />
-          </Link>
-          <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
+        
+        <div className="location-container">
+          <div className="location-selector" onClick={() => setShowLocationDropdown(!showLocationDropdown)}>
+            <span className="pin-icon">📍</span>
+            <span className="current-location">{selectedLocation}</span>
+            <span className="arrow-down">▼</span>
+          </div>
+          
+          {showLocationDropdown && (
+            <ul className="location-dropdown glass-card">
+              {locations.map((loc) => (
+                <li 
+                  key={loc} 
+                  onClick={() => {
+                    setSelectedLocation(loc);
+                    setShowLocationDropdown(false);
+                    toast.info(`Location updated to ${loc}`);
+                  }}
+                  className={selectedLocation === loc ? "active" : ""}
+                >
+                  {loc}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
+      </div>
+
+      <ul className="navbar-menu">
+        <Link to="/">Home</Link>
+        <Link to="/search" className="search-nav-link">
+          <span className="search-icon-emoji">🔍</span> Search
+        </Link>
+      </ul>
+
+      <div className="navbar-right">
+        <Link to="/cart" className="navbar-cart-container">
+          <span className="cart-emoji">🛒</span>
+          {getCartCount() > 0 && <span className="cart-badge">{getCartCount()}</span>}
+        </Link>
+
         {!token ? (
-          <button onClick={() => setShowLogin(true)}>sign in</button>
+          <button className="sign-in-btn" onClick={() => setShowLogin(true)}>Sign In</button>
         ) : (
           <div className="navbar-profile">
-            <img src={assets.profile_icon} alt="" />
-            <ul className="nav-profile-dropdown">
-              <li onClick={()=>navigate("/myorders")}><img src={assets.bag_icon} alt="" /><p>Orders</p></li>
+            <div className="profile-trigger">
+              <img src={assets.profile_icon} alt="Profile" className="profile-pic" />
+            </div>
+            <ul className="nav-profile-dropdown glass-card">
+              <li onClick={() => navigate("/myorders")}>
+                <img src={assets.bag_icon} alt="" />
+                <p>My Orders</p>
+              </li>
               <hr />
-              <li onClick={logout}><img src={assets.logout_icon} alt="" /><p>Logout</p></li>
+              <li onClick={logout}>
+                <img src={assets.logout_icon} alt="" />
+                <p>Logout</p>
+              </li>
             </ul>
           </div>
         )}
